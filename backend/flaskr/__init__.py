@@ -24,8 +24,27 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
   
+  # curl http://127.0.0.1:5000/categories/5/questions
+  @app.route("/categories/<int:category_id>/questions")
+  def retrieve_questions(category_id):
+      selection = Question.query.filter_by(category=category_id).order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
+
+      if len(current_questions) == 0:
+          abort(404)
+
+      return jsonify(
+          {
+              "success": True,
+              "questions": current_questions,
+              "total_questions": len(selection),
+              "current_category":category_id
+          }
+      )
+      
+  # curl http://127.0.0.1:5000/questions
   @app.route("/questions")
-  def retrieve_questions():
+  def retrieve_all_questions():
       selection = Question.query.order_by(Question.id).all()
       current_questions = paginate_questions(request, selection)
 
@@ -36,7 +55,7 @@ def create_app(test_config=None):
           {
               "success": True,
               "questions": current_questions,
-              "total_questions": len(Question.query.all()),
+              "total_questions": len(selection)
           }
       )
 
@@ -56,11 +75,10 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
+  #*Completed: 
   Create an endpoint to handle GET requests for questions, 
   including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
+  #TODO: This endpoint should return a list of questions, number of total questions, current category, categories. 
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,
