@@ -26,9 +26,11 @@ def create_app(test_config=None):
   
   # curl http://127.0.0.1:5000/categories/5/questions
   @app.route("/categories/<int:category_id>/questions")
-  def retrieve_questions(category_id):
+  def get_by_category(category_id):
       selection = Question.query.filter_by(category=category_id).order_by(Question.id).all()
       current_questions = paginate_questions(request, selection)
+      categories_query = Category.query.order_by(Category.id).all()
+      categories = [category.format() for category in categories_query]
 
       if len(current_questions) == 0:
           abort(404)
@@ -38,7 +40,8 @@ def create_app(test_config=None):
               "success": True,
               "questions": current_questions,
               "total_questions": len(selection),
-              "current_category":category_id
+              "current_category":category_id,
+              "categories":categories
           }
       )
       
@@ -47,7 +50,8 @@ def create_app(test_config=None):
   def retrieve_all_questions():
       selection = Question.query.order_by(Question.id).all()
       current_questions = paginate_questions(request, selection)
-
+      categories_query = Category.query.order_by(Category.id).all()
+      categories = [category.format() for category in categories_query]
       if len(current_questions) == 0:
           abort(404)
 
@@ -55,7 +59,8 @@ def create_app(test_config=None):
           {
               "success": True,
               "questions": current_questions,
-              "total_questions": len(selection)
+              "total_questions": len(selection),
+              "categories":categories
           }
       )
 
@@ -78,7 +83,7 @@ def create_app(test_config=None):
   #*Completed: 
   Create an endpoint to handle GET requests for questions, 
   including pagination (every 10 questions). 
-  #TODO: This endpoint should return a list of questions, number of total questions, current category, categories. 
+  This endpoint should return a list of questions, number of total questions, current category, categories. 
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,
