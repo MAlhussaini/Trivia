@@ -23,6 +23,33 @@ def create_app(test_config=None):
   # create and configure the app
     app = Flask(__name__)
     setup_db(app)
+    CORS(app)
+
+    # CORS Headers
+    @app.after_request
+    def after_request(response):
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type,Authorization,true"
+        )
+        response.headers.add(
+            "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS"
+        )
+        return response
+
+    # curl http://127.0.0.1:5000/categories
+    @app.route("/categories")
+    def retrieve_categories():
+        categories_query = Category.query.order_by(Category.id).all()
+        categories = [category.format() for category in categories_query]
+        if len(categories) == 0:
+            abort(404)
+
+        return jsonify(
+            {
+                "success": True,
+                "categories":categories
+            }
+        )
   
     # curl http://127.0.0.1:5000/categories/5/questions
     @app.route("/categories/<int:category_id>/questions")
@@ -91,12 +118,59 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+    @app.route("/questions", methods=["POST"])
+    def create_question():
+        body = request.get_json()
+
+        new_question = body.get("question", None)
+        new_answer = body.get("answer", None)
+        new_difficulty = body.get("difficulty", None)
+        new_category = body.get("category", None)
+        search = body.get("search", None)
+
+        try:
+            if search:
+                selection = Question.query.order_by(Question.id).filter(
+                    Question.question.ilike("%{}%".format(search))
+                )
+                # selection = question.query.order_by(question.id).filter(or_(question.title.ilike('%{}%'.format(search)), question.author.ilike('%{}%'.format(search))))
+                current_questions = paginate_questions(request, selection)
+
+                return jsonify(
+                    {
+                        "success": True,
+                        "questions": current_questions,
+                        "total_questions": len(selection.all()),
+                    }
+                )
+            else:
+                question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+                question.insert()
+
+                selection = Question.query.order_by(Question.id).all()
+                current_questions = paginate_questions(request, selection)
+
+                return jsonify(
+                    {
+                        "success": True,
+                        "created": Question.id,
+                        "questions": current_questions,
+                        "total_questions": len(Question.query.all()),
+                    }
+                )
+
+        except:
+            abort(422)
+
+
     '''
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    #*Completed: 
+    Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
     '''
 
     '''
-    @TODO: Use the after_request decorator to set Access-Control-Allow
+    #*Completed: 
+    Use the after_request decorator to set Access-Control-Allow
     '''
 
     '''
@@ -119,7 +193,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    #TODO: 
+    #*Completed: 
     Create an endpoint to DELETE question using a question ID. 
 
     TEST: When you click the trash icon next to a question, the question will be removed.
@@ -127,7 +201,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    @TODO: 
+    #TODO: 
     Create an endpoint to POST a new question, 
     which will require the question and answer text, 
     category, and difficulty score.

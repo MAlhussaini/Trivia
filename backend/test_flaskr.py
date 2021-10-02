@@ -57,7 +57,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["categories"]))
 # TODO: error
     def test_404_sent_requesting_beyond_valid_page(self):
-        res = self.client().get("/questions?page=1000"})
+        res = self.client().get("/questions?page=1000")
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
