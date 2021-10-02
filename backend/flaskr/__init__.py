@@ -118,6 +118,8 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+    # curl -X POST -H "Content-Type: application/json" -d '{"question":"test_question", "answer":"test_answer", "difficulty":"3", "category":"5"}' http://127.0.0.1:5000/questions   
+
     @app.route("/questions", methods=["POST"])
     def create_question():
         body = request.get_json()
@@ -149,13 +151,18 @@ def create_app(test_config=None):
 
                 selection = Question.query.order_by(Question.id).all()
                 current_questions = paginate_questions(request, selection)
+                categories_query = Category.query.order_by(Category.id).all()
+                categories = [category.format() for category in categories_query]
+                if len(current_questions) == 0:
+                    abort(404)
 
                 return jsonify(
                     {
                         "success": True,
-                        "created": Question.id,
+                        "created": question.id,
                         "questions": current_questions,
-                        "total_questions": len(Question.query.all()),
+                        "total_questions": len(selection),
+                        "categories":categories
                     }
                 )
 
@@ -174,7 +181,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    @TODO: 
+    #*Completed: 
     Create an endpoint to handle GET requests 
     for all available categories.
     '''
@@ -201,7 +208,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    #TODO: 
+    #*Completed: 
     Create an endpoint to POST a new question, 
     which will require the question and answer text, 
     category, and difficulty score.
