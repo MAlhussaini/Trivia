@@ -119,7 +119,7 @@ def create_app(test_config=None):
             abort(422)
 
     # curl -X POST -H "Content-Type: application/json" -d '{"question":"test_question", "answer":"test_answer", "difficulty":"3", "category":"5"}' http://127.0.0.1:5000/questions   
-
+    # curl -X POST -H "Content-Type: application/json" -d '{"search":"what"}' http://127.0.0.1:5000/questions   
     @app.route("/questions", methods=["POST"])
     def create_question():
         body = request.get_json()
@@ -131,18 +131,20 @@ def create_app(test_config=None):
         search = body.get("search", None)
 
         try:
+            categories_query = Category.query.order_by(Category.id).all()
+            categories = [category.format() for category in categories_query]
+
             if search:
                 selection = Question.query.order_by(Question.id).filter(
                     Question.question.ilike("%{}%".format(search))
                 )
-                # selection = question.query.order_by(question.id).filter(or_(question.title.ilike('%{}%'.format(search)), question.author.ilike('%{}%'.format(search))))
                 current_questions = paginate_questions(request, selection)
-
                 return jsonify(
                     {
                         "success": True,
                         "questions": current_questions,
                         "total_questions": len(selection.all()),
+                        "categories":categories
                     }
                 )
             else:
@@ -151,8 +153,6 @@ def create_app(test_config=None):
 
                 selection = Question.query.order_by(Question.id).all()
                 current_questions = paginate_questions(request, selection)
-                categories_query = Category.query.order_by(Category.id).all()
-                categories = [category.format() for category in categories_query]
                 if len(current_questions) == 0:
                     abort(404)
 
@@ -219,7 +219,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    @TODO: 
+    #TODO: 
     Create a POST endpoint to get questions based on a search term. 
     It should return any questions for whom the search term 
     is a substring of the question. 
