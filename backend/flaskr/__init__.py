@@ -169,6 +169,25 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+    @app.errorhandler(404)
+    def not_found(error):
+        return (
+            jsonify({"success": False, "error": 404, "message": "resource not found"}),
+            404,
+        )
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return (
+            jsonify({"success": False, "error": 422, "message": "unprocessable"}),
+            422,
+        )
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return (jsonify({"success": False, "error": 400, "message": "bad request"}), 400)
+
+
 
     '''
     #*Completed: 
@@ -219,7 +238,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    #TODO: 
+    #*Completed: 
     Create a POST endpoint to get questions based on a search term. 
     It should return any questions for whom the search term 
     is a substring of the question. 
@@ -230,7 +249,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    @TODO: 
+    #*Completed: 
     Create a GET endpoint to get questions based on category. 
 
     TEST: In the "List" tab / main screen, clicking on one of the 
@@ -252,7 +271,7 @@ def create_app(test_config=None):
     '''
 
     '''
-    @TODO: 
+    #*Completed: 
     Create error handlers for all expected errors 
     including 404 and 422. 
     '''
