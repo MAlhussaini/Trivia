@@ -52,6 +52,7 @@ def create_app(test_config=None):
       current_questions = paginate_questions(request, selection)
       categories_query = Category.query.order_by(Category.id).all()
       categories = [category.format() for category in categories_query]
+      print(categories_query)
       if len(current_questions) == 0:
           abort(404)
 
