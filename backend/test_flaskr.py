@@ -66,7 +66,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["success"], True)
         self.assertTrue(len(data["categories"]))
 
-# TODO: error
     def test_404_sent_requesting_beyond_valid_page(self):
         res = self.client().get("/questions?page=1000")
         data = json.loads(res.data)
@@ -85,7 +84,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["questions"]))
         self.assertTrue(len(data["categories"]))
 
-# TODO: error
     def test_422_if_question_creation_fails(self):
         res = self.client().post("/questions", json=self.new_question)
         data = json.loads(res.data)
@@ -94,7 +92,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "resource not found")
 
     def test_get_question_search_with_results(self):
-        res = self.client().post("/questions", json={"search": "What"})
+        res = self.client().post("/questions", json={"searchTerm": "What"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -104,7 +102,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data["categories"])
 
     def test_get_question_search_without_results(self):
-        res = self.client().post("/questions", json={"search": "Bazingaboom"})
+        res = self.client().post("/questions", json={"searchTerm": "Bazingaboom"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -129,7 +127,7 @@ class TriviaTestCase(unittest.TestCase):
     #     self.assertTrue(len(data['questions']))
     #     self.assertTrue(len(data['categories']))
     #     self.assertEqual(question, None)
-# TODO: error
+
     def test_404_if_question_does_not_exist(self):
         res = self.client().delete("/questions/1000")
         data = json.loads(res.data)

@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 from flask_cors import CORS
 import random
 
@@ -119,7 +120,7 @@ def create_app(test_config=None):
             abort(422)
 
     # curl -X POST -H "Content-Type: application/json" -d '{"question":"test_question", "answer":"test_answer", "difficulty":"3", "category":"5"}' http://127.0.0.1:5000/questions   
-    # curl -X POST -H "Content-Type: application/json" -d '{"search":"what"}' http://127.0.0.1:5000/questions   
+    # curl -X POST -H "Content-Type: application/json" -d '{"searchTerm":"what"}' http://127.0.0.1:5000/questions   
     @app.route("/questions", methods=["POST"])
     def create_question():
         body = request.get_json()
@@ -128,7 +129,7 @@ def create_app(test_config=None):
         new_answer = body.get("answer", None)
         new_difficulty = body.get("difficulty", None)
         new_category = body.get("category", None)
-        search = body.get("search", None)
+        search = body.get("searchTerm", None)
 
         try:
             categories_query = Category.query.order_by(Category.id).all()
@@ -144,7 +145,7 @@ def create_app(test_config=None):
                         "success": True,
                         "questions": current_questions,
                         "total_questions": len(selection.all()),
-                        "categories":categories
+                        "current_category":categories
                     }
                 )
             else:
@@ -162,12 +163,41 @@ def create_app(test_config=None):
                         "created": question.id,
                         "questions": current_questions,
                         "total_questions": len(selection),
-                        "categories":categories
+                        "current_category":categories
                     }
                 )
 
         except:
             abort(422)
+
+    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":[] ,"quiz_category":null}' http://127.0.0.1:5000/quizzes   
+    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":["Who discovered penicillin?"] ,"quiz_category":1}' http://127.0.0.1:5000/quizzes   
+    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":["What is the heaviest organ in the human body?","Hematology is a branch of medicine involving the study of what?"] ,"quiz_category":1}' http://127.0.0.1:5000/quizzes   
+    @app.route("/quizzes", methods=["POST"])
+    def play():
+        body = request.get_json()
+
+        previous_questions = body.get("previous_questions", None)
+        quiz_category = body.get("quiz_category", None)
+        try:
+            if quiz_category is None:
+                question = Question.query.order_by(func.random()).first()
+            else:
+                question = Question.query.filter(~Question.question.in_(previous_questions)).filter_by(category=quiz_category).order_by(func.random()).first()
+            if question is None:
+                abort(422)
+            return jsonify(
+                {
+                    "success": True,
+                    "question": question.question,
+                    "answer": question.answer,
+                    # "questions": question.format(), #Not needed.
+                }
+            )
+        except:
+            abort(422)
+
+
 
     @app.errorhandler(404)
     def not_found(error):
@@ -259,12 +289,13 @@ def create_app(test_config=None):
 
 
     '''
-    @TODO: 
+    #*Completed: 
     Create a POST endpoint to get questions to play the quiz. 
     This endpoint should take category and previous question parameters 
     and return a random questions within the given category, 
     if provided, and that is not one of the previous questions. 
 
+    #TODO
     TEST: In the "Play" tab, after a user selects "All" or a category,
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not. 
