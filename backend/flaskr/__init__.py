@@ -9,6 +9,12 @@ from models import setup_db, Question, Category
 # Paginate questions by a given number of questions per page
 QUESTIONS_PER_PAGE = 10
 
+# Running the app
+'''
+export FLASK_APP=flaskr
+export FLASK_ENV=development
+flask run --reload
+'''
 def paginate_questions(request, selection):
     # Return a formatted list of question for the page given
     page = request.args.get("page", 1, type=int)
@@ -55,7 +61,7 @@ def create_app(test_config=None):
             }
         )
   
-    # curl http://127.0.0.1:5000/categories/5/questions
+    # curl http://127.0.0.1:5000/categories/1/questions
     @app.route("/categories/<int:category_id>/questions")
     def get_by_category(category_id):
         # Retrieve all questions located in a given category divided in pages
@@ -105,7 +111,7 @@ def create_app(test_config=None):
             question = Question.query.filter(Question.id == question_id).one_or_none()
 
             if question is None:
-                abort(404)
+                abort(422)
 
             question.delete()
             selection = Question.query.order_by(Question.id).all()
@@ -205,7 +211,7 @@ def create_app(test_config=None):
                     "success": True,
                     "question": question.question,
                     "answer": question.answer,
-                    # "questions": question.format(), #Not needed.
+                    "questions": question.format(),
                 }
             )
         except:
