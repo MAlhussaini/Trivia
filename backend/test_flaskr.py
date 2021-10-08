@@ -14,6 +14,7 @@ createdb trivia_test
 psql trivia_test < trivia.psql
 '''
 
+
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
 
@@ -22,11 +23,14 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgresql://{}:{}@{}/{}".format("caryn", "caryn", "localhost:5432", self.database_name)
+        self.database_path = "postgresql://{}:{}@{}/{}".format(
+            "caryn", "caryn", "localhost:5432", self.database_name)
         setup_db(self.app, self.database_path)
-        
-        self.new_question = {"question":"test_question", "answer":"test_answer", "difficulty":3, "category":5}
-        self.missing_question = { "question":"test_question", "answer":"test_answer", "difficulty":3, "category":"text"}
+
+        self.new_question = {"question": "test_question",
+                             "answer": "test_answer", "difficulty": 3, "category": 5}
+        self.missing_question = {"question": "test_question",
+                                 "answer": "test_answer", "difficulty": 3, "category": "text"}
 
         # binds the app to the current context
         with self.app.app_context():
@@ -34,7 +38,7 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
@@ -50,7 +54,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["questions"]))
         self.assertTrue(len(data["categories"]))
 
-
     def test_get_paginated_all_questions(self):
         res = self.client().get("/questions")
         data = json.loads(res.data)
@@ -60,7 +63,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data["total_questions"])
         self.assertTrue(len(data["questions"]))
         self.assertTrue(len(data["categories"]))
-        
+
     def test_get_all_categories(self):
         res = self.client().get("/categories")
         data = json.loads(res.data)
@@ -88,7 +91,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["current_category"]))
 
     def test_quiz(self):
-        self.quiz = {"previous_questions":[] ,"quiz_category":None}
+        self.quiz = {"previous_questions": [], "quiz_category": None}
         res = self.client().post("/quizzes", json=self.quiz)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
@@ -113,7 +116,8 @@ class TriviaTestCase(unittest.TestCase):
         # self.assertTrue(data["categories"])
 
     def test_get_question_search_without_results(self):
-        res = self.client().post("/questions", json={"searchTerm": "Bazingaboom"})
+        res = self.client().post(
+            "/questions", json={"searchTerm": "Bazingaboom"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -121,9 +125,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["total_questions"], 0)
         self.assertEqual(len(data["questions"]), 0)
         # self.assertTrue(data["categories"])
-
-
-
 
     def test_delete_question(self):
         res = self.client().delete('/questions/2')
@@ -146,7 +147,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "unprocessable")
-
 
 
 # Make the tests conveniently executable

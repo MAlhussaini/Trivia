@@ -15,6 +15,8 @@ export FLASK_APP=flaskr
 export FLASK_ENV=development
 flask run --reload
 '''
+
+
 def paginate_questions(request, selection):
     # Return a formatted list of question for the page given
     page = request.args.get("page", 1, type=int)
@@ -57,15 +59,16 @@ def create_app(test_config=None):
         return jsonify(
             {
                 "success": True,
-                "categories":categories
+                "categories": categories
             }
         )
-  
+
     # curl http://127.0.0.1:5000/categories/1/questions
     @app.route("/categories/<int:category_id>/questions")
     def get_by_category(category_id):
         # Retrieve all questions located in a given category divided in pages
-        selection = Question.query.filter_by(category=category_id).order_by(Question.id).all()
+        selection = Question.query.filter_by(
+            category=category_id).order_by(Question.id).all()
         current_questions = paginate_questions(request, selection)
         categories_query = Category.query.order_by(Category.id).all()
         categories = [category.format() for category in categories_query]
@@ -78,11 +81,11 @@ def create_app(test_config=None):
                 "success": True,
                 "questions": current_questions,
                 "total_questions": len(selection),
-                "current_category":category_id,
-                "categories":categories
+                "current_category": category_id,
+                "categories": categories
             }
         )
-        
+
     # curl http://127.0.0.1:5000/questions
     @app.route("/questions")
     def retrieve_all_questions():
@@ -99,16 +102,17 @@ def create_app(test_config=None):
                 "success": True,
                 "questions": current_questions,
                 "total_questions": len(selection),
-                "categories":categories
+                "categories": categories
             }
         )
 
-    # curl -X DELETE http://127.0.0.1:5000/questions/10 
+    # curl -X DELETE http://127.0.0.1:5000/questions/10
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
         # Delete a question specified by ID
         try:
-            question = Question.query.filter(Question.id == question_id).one_or_none()
+            question = Question.query.filter(
+                Question.id == question_id).one_or_none()
 
             if question is None:
                 abort(422)
@@ -125,14 +129,14 @@ def create_app(test_config=None):
                     "deleted": question_id,
                     "questions": current_questions,
                     "total_questions": len(selection),
-                    "categories":categories
+                    "categories": categories
                 }
             )
         except:
             abort(422)
 
-    # curl -X POST -H "Content-Type: application/json" -d '{"question":"test_question", "answer":"test_answer", "difficulty":"3", "category":"5"}' http://127.0.0.1:5000/questions   
-    # curl -X POST -H "Content-Type: application/json" -d '{"searchTerm":"what"}' http://127.0.0.1:5000/questions   
+    # curl -X POST -H "Content-Type: application/json" -d '{"question":"test_question", "answer":"test_answer", "difficulty":"3", "category":"5"}' http://127.0.0.1:5000/questions
+    # curl -X POST -H "Content-Type: application/json" -d '{"searchTerm":"what"}' http://127.0.0.1:5000/questions
     @app.route("/questions", methods=["POST"])
     def create_or_search_question():
         # Add a new question to the database
@@ -160,12 +164,13 @@ def create_app(test_config=None):
                         "success": True,
                         "questions": current_questions,
                         "total_questions": len(selection.all()),
-                        "current_category":categories
+                        "current_category": categories
                     }
                 )
             else:
                 # Other wise add a new question to the database
-                question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+                question = Question(question=new_question, answer=new_answer,
+                                    difficulty=new_difficulty, category=new_category)
                 # Insert the new question to the database
                 question.insert()
 
@@ -180,19 +185,19 @@ def create_app(test_config=None):
                         "created": question.id,
                         "questions": current_questions,
                         "total_questions": len(selection),
-                        "current_category":categories
+                        "current_category": categories
                     }
                 )
 
         except:
             abort(422)
 
-    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":[] ,"quiz_category":null}' http://127.0.0.1:5000/quizzes   
-    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":["Who discovered penicillin?"] ,"quiz_category":1}' http://127.0.0.1:5000/quizzes   
-    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":["What is the heaviest organ in the human body?","Hematology is a branch of medicine involving the study of what?"] ,"quiz_category":1}' http://127.0.0.1:5000/quizzes   
+    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":[] ,"quiz_category":null}' http://127.0.0.1:5000/quizzes
+    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":["Who discovered penicillin?"] ,"quiz_category":1}' http://127.0.0.1:5000/quizzes
+    # curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":["What is the heaviest organ in the human body?","Hematology is a branch of medicine involving the study of what?"] ,"quiz_category":1}' http://127.0.0.1:5000/quizzes
     @app.route("/quizzes", methods=["POST"])
     def play():
-        # Play a quiz using unique randomized questions 
+        # Play a quiz using unique randomized questions
         body = request.get_json()
 
         previous_questions = body.get("previous_questions", None)
@@ -200,10 +205,12 @@ def create_app(test_config=None):
         try:
             if quiz_category is None:
                 # give a random for all categories
-                question = Question.query.filter(~Question.question.in_(previous_questions)).order_by(func.random()).first()
+                question = Question.query.filter(~Question.question.in_(
+                    previous_questions)).order_by(func.random()).first()
             else:
                 # give a random for specific categories
-                question = Question.query.filter(~Question.question.in_(previous_questions)).filter_by(category=quiz_category).order_by(func.random()).first()
+                question = Question.query.filter(~Question.question.in_(previous_questions)).filter_by(
+                    category=quiz_category).order_by(func.random()).first()
             if question is None:
                 abort(422)
             return jsonify(
@@ -217,29 +224,32 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-
-
     @app.errorhandler(404)
     def not_found(error):
         # Handel a 404 errors
         return (
-            jsonify({"success": False, "error": 404, "message": "resource not found"}),
-            404,
+            jsonify({"success": False,
+                     "error": 404,
+                     "message": "resource not found"}), 404
         )
 
     @app.errorhandler(422)
     def unprocessable(error):
         # Handel a 422 errors
         return (
-            jsonify({"success": False, "error": 422, "message": "unprocessable"}),
-            422,
+            jsonify({"success": False,
+                     "error": 422,
+                     "message": "unprocessable"}), 422
         )
 
     @app.errorhandler(400)
     def bad_request(error):
         # Handel a 400 errors
-        return (jsonify({"success": False, "error": 400, "message": "bad request"}), 400)
+        return (
+            jsonify(
+                {"success": False,
+                 "error": 400,
+                 "message": "bad request"}), 400
+        )
 
     return app
-
-    
