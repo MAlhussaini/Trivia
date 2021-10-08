@@ -50,7 +50,7 @@ def create_app(test_config=None):
     # curl http://127.0.0.1:5000/categories
     @app.route("/categories")
     def retrieve_categories():
-        # Get a randomized question and its answer
+        # Retrive all categories formatted for frontend
         categories_query = Category.query.order_by(Category.id).all()
         categories = [category.format() for category in categories_query]
         if len(categories) == 0:
